@@ -20,7 +20,7 @@ A 2D CFD simulation of incompressible flow over a circular cylinder using OpenFO
 * **OpenFOAM** – CFD simulation
 * **pimpleFoam** – Transient incompressible solver
 * **ParaView** – Post-processing and visualization
-* **Python / MATLAB (optional)** – FFT and frequency analysis
+* **MATLAB (optional)** – FFT and frequency analysis
 
 ---
 
