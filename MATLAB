@@ -1,0 +1,74 @@
+clc;
+clear;
+close all;
+
+%% -------------------- GIVEN --------------------
+Re = 1000;
+D  = 1.0;
+nu = 1.5e-5;
+
+U = Re * nu / D;
+
+%% -------------------- LOAD DATA --------------------
+data = readmatrix('d.xlsx');   % your file
+
+% Fix: ensure numeric only
+data = data(~any(isnan(data),2),:);
+
+time = data(:,1);
+signal = data(:,2);
+
+%% -------------------- SELECT TIME RANGE --------------------
+t_start = 3000;
+t_end   = 5000;
+
+idx = (time >= t_start) & (time <= t_end);
+
+% Safety check
+if sum(idx) < 10
+    error('Not enough data points in selected range');
+end
+
+time = time(idx);
+signal = signal(idx);
+
+%% -------------------- SAMPLING --------------------
+dt = time(2) - time(1);
+fs = 1/dt;
+N = length(signal);
+
+%% -------------------- PREPROCESS --------------------
+signal = signal - mean(signal);
+signal = signal .* hann(N);
+
+%% -------------------- FFT --------------------
+Y = fft(signal);
+Y = abs(Y)/N;
+
+f = (0:N-1)*(fs/N);
+
+half = floor(N/2);
+f = f(1:half);
+Y = Y(1:half);
+
+%% -------------------- PEAK --------------------
+[~, idx_max] = max(Y);
+f_shed = f(idx_max);
+
+fprintf('Shedding frequency = %.6f Hz\n', f_shed);
+
+%% -------------------- STROUHAL --------------------
+St = f_shed * D / U;
+fprintf('Strouhal Number = %.6f\n', St);
+
+%% -------------------- PLOT --------------------
+figure;
+plot(f, Y, 'LineWidth', 1.5);
+grid on;
+xlabel('Frequency (Hz)');
+ylabel('Amplitude');
+title('FFT (3000–5000 sec)');
+
+hold on;
+plot(f_shed, Y(idx_max), 'ro');
+text(f_shed, Y(idx_max), sprintf('  f = %.4f Hz', f_shed));
